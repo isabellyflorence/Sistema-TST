@@ -1,0 +1,13 @@
+<section class="module-page page-animation">
+  <header class="module-header"><div><span class="page-kicker">ANÁLISE E AUDITORIA</span><h1>Relatórios</h1><p>Consulte informações gerenciais e exporte em PDF ou Excel.</p></div><div class="module-actions"><button class="btn-outline" type="button" (click)="exportExcel()" [disabled]="!rows.length"><i class="bi bi-file-earmark-excel"></i> Excel</button><button class="btn-primary" type="button" (click)="exportPdf()" [disabled]="!rows.length"><i class="bi bi-file-earmark-pdf"></i> PDF</button></div></header>
+
+  <div class="report-layout">
+    <aside class="panel report-menu"><div class="panel-title"><div><h2>Tipo de relatório</h2><p>Selecione uma visão.</p></div></div>@for (option of options; track option.id) {<button type="button" [class.active]="reportType === option.id" (click)="setReport(option.id)"><i class="bi {{ option.icon }}"></i><span><strong>{{ option.label }}</strong><small>{{ option.description }}</small></span><i class="bi bi-chevron-right"></i></button>}</aside>
+
+    <article class="panel report-content">
+      <div class="report-heading"><div class="report-title-icon"><i class="bi {{ selectedOption.icon }}"></i></div><div><h2>{{ selectedOption.label }}</h2><p>{{ selectedOption.description }}</p></div><span>{{ rows.length }} resultado(s)</span></div>
+      <div class="report-filters"><label>Data inicial<input type="date" [(ngModel)]="startDate"></label><label>Data final<input type="date" [(ngModel)]="endDate"></label><label class="report-search">Busca<i class="bi bi-search"></i><input [(ngModel)]="search" placeholder="Filtrar resultados"></label></div>
+      <div class="table-responsive report-table"><table class="data-table"><caption class="visually-hidden">Resultados do relatório {{ selectedOption.label }}</caption><thead><tr>@for (column of columns; track column) {<th>{{ column }}</th>}</tr></thead><tbody>@for (row of rows; track $index) {<tr>@for (column of columns; track column) {<td>{{ row[column] }}</td>}</tr>}@empty {<tr><td class="empty-state">Não há dados para os filtros informados.</td></tr>}</tbody></table></div>
+    </article>
+  </div>
+</section>

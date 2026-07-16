@@ -1,0 +1,118 @@
+<div class="app-shell">
+  <a class="skip-link" href="#main-content">Ir para o conteúdo principal</a>
+  <aside class="sidebar" [class.open]="menuAberto">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">
+        <i class="bi bi-shield-plus"></i>
+      </div>
+
+      <div class="sidebar-brand-text">
+        <strong>Hospital Esperança</strong>
+        <span>SICC</span>
+      </div>
+
+      <button
+        class="close-menu d-lg-none"
+        type="button"
+        aria-label="Fechar menu"
+        (click)="fecharMenu()">
+
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-menu">
+      <span class="menu-label">MENU PRINCIPAL</span>
+
+      @for (item of visibleMenuItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          (click)="fecharMenu()">
+
+          <i class="bi {{ item.icon }}"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="support-card">
+        <i class="bi bi-headset"></i>
+
+        <div>
+          <strong>Suporte interno</strong>
+          <span>Precisa de ajuda?</span>
+        </div>
+      </div>
+
+      <button type="button" class="logout" (click)="logout()">
+        <i class="bi bi-box-arrow-left"></i>
+        <span>Sair</span>
+      </button>
+    </div>
+  </aside>
+
+  @if (menuAberto) {
+    <div class="menu-overlay d-lg-none" (click)="fecharMenu()"></div>
+  }
+
+  <section class="content-area">
+    <header class="topbar">
+      <button
+        class="mobile-menu-button d-lg-none"
+        type="button"
+        aria-label="Abrir menu principal"
+        (click)="alternarMenu()">
+
+        <i class="bi bi-list"></i>
+      </button>
+
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          aria-label="Buscar colaboradores, EPIs ou treinamentos"
+          placeholder="Buscar colaboradores, EPIs ou treinamentos">
+
+        @if (searchResults.length) {
+          <div class="search-results">
+            @for (result of searchResults; track result.label + result.detail) {
+              <button type="button" (click)="navigateTo(result)"><i class="bi {{ result.icon }}"></i><span><strong>{{ result.label }}</strong><small>{{ result.detail }}</small></span></button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="topbar-actions">
+        <button class="notification-button" type="button" aria-label="Abrir notificações" (click)="notificationsOpen = !notificationsOpen; profileOpen = false" [attr.aria-expanded]="notificationsOpen">
+          <i class="bi bi-bell"></i>
+          @if (notifications.length) {<span></span>}
+        </button>
+
+        @if (notificationsOpen) {
+          <div class="topbar-popover notification-popover"><div class="popover-heading"><strong>Notificações</strong><span>{{ notifications.length }}</span></div>@for (notification of notifications; track notification.label) {<button type="button" (click)="navigateTo(notification)"><i class="bi {{ notification.icon }}"></i><span><strong>{{ notification.label }}</strong><small>{{ notification.detail }}</small></span></button>}@empty {<p>Nenhum alerta no momento.</p>}</div>
+        }
+
+        <button type="button" class="profile" (click)="profileOpen = !profileOpen; notificationsOpen = false" [attr.aria-expanded]="profileOpen">
+          <div class="profile-avatar">{{ initials }}</div>
+
+          <div class="profile-data d-none d-sm-flex">
+            <strong>{{ auth.currentUser()?.name }}</strong>
+            <span>{{ auth.currentUser()?.profile }}</span>
+          </div>
+
+          <i class="bi bi-chevron-down d-none d-sm-block"></i>
+        </button>
+
+        @if (profileOpen) {<div class="topbar-popover profile-popover"><div><strong>{{ auth.currentUser()?.name }}</strong><span>{{ auth.currentUser()?.email }}</span></div>@if (auth.canAccess('configuracoes')) {<button type="button" (click)="navigateTo({ label: '', detail: '', icon: '', route: '/configuracoes' })"><i class="bi bi-gear"></i> Configurações</button>}<button type="button" (click)="logout()"><i class="bi bi-box-arrow-left"></i> Sair</button></div>}
+      </div>
+    </header>
+
+    <main id="main-content" class="main-content" tabindex="-1">
+      <router-outlet></router-outlet>
+    </main>
+  </section>
+</div>

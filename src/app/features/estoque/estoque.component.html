@@ -1,0 +1,31 @@
+<section class="module-page page-animation">
+  <header class="module-header"><div><span class="page-kicker">CONTROLE DE SALDOS</span><h1>Estoque</h1><p>Acompanhe entradas, saídas, níveis mínimos e validades.</p></div></header>
+
+  <div class="summary-grid">
+    <article class="summary-card"><div class="summary-icon blue"><i class="bi bi-boxes"></i></div><div><span>Total em estoque</span><strong>{{ totalItems }}</strong><small>unidades disponíveis</small></div></article>
+    <article class="summary-card"><div class="summary-icon red"><i class="bi bi-exclamation-triangle"></i></div><div><span>Itens críticos</span><strong>{{ lowStockCount }}</strong><small>abaixo do mínimo</small></div></article>
+    <article class="summary-card"><div class="summary-icon yellow"><i class="bi bi-calendar2-exclamation"></i></div><div><span>Validades em alerta</span><strong>{{ expiringCount }}</strong><small>em até {{ data.settings().alertDays }} dias</small></div></article>
+  </div>
+
+  @if (message) {<div class="feedback" [class.error]="messageType === 'error'" [attr.role]="messageType === 'error' ? 'alert' : 'status'"><i class="bi" [class.bi-check-circle]="messageType === 'success'" [class.bi-exclamation-circle]="messageType === 'error'"></i>{{ message }}</div>}
+
+  <div class="module-grid inventory-grid">
+    <form class="panel record-form compact-form" (ngSubmit)="register()">
+      <div class="panel-title"><div><h2>Movimentar estoque</h2><p>Registre recebimentos e saídas avulsas.</p></div><i class="bi bi-box-arrow-in-down"></i></div>
+      <div class="operation-selector two-options"><button type="button" [class.active]="movement.type === 'Entrada'" (click)="movement.type = 'Entrada'"><i class="bi bi-box-arrow-in-down"></i> Entrada</button><button type="button" [class.active]="movement.type === 'Saída'" (click)="movement.type = 'Saída'"><i class="bi bi-box-arrow-up"></i> Saída</button></div>
+      <div class="form-grid">
+        <label class="span-2">EPI*<select name="stockEpi" [(ngModel)]="movement.epiId"><option value="">Selecione</option>@for (epi of data.epis(); track epi.id) {<option [value]="epi.id">{{ epi.name }} · saldo {{ epi.stock }}</option>}</select></label>
+        <label>Quantidade*<input type="number" min="1" name="stockQuantity" [(ngModel)]="movement.quantity"></label>
+        <label>Data e hora*<input type="datetime-local" name="stockDate" [(ngModel)]="movement.date"></label>
+        <label class="span-2">Origem / motivo<textarea rows="2" name="stockReason" [(ngModel)]="movement.reason" placeholder="Ex.: recebimento do fornecedor"></textarea></label>
+      </div>
+      <div class="form-actions"><button class="btn-primary" type="submit"><i class="bi bi-check-lg"></i> Registrar</button></div>
+      <div class="recent-mini-list"><h3>Últimas movimentações</h3>@for (item of stockMovements; track item.id) {<div><i class="bi" [class.bi-arrow-down-circle]="item.type === 'Entrada'" [class.bi-arrow-up-circle]="item.type === 'Saída'"></i><span><strong>{{ item.type }} · {{ data.epiName(item.epiId) }}</strong><small>{{ item.quantity }} un. · {{ formatDate(item.date) }}</small></span></div>}@empty {<p>Nenhuma entrada ou saída registrada.</p>}</div>
+    </form>
+
+    <article class="panel records-panel">
+      <div class="list-toolbar"><div><h2>Estoque atual</h2><p>{{ filteredEpis.length }} item(ns)</p></div><div class="toolbar-fields"><select [(ngModel)]="statusFilter"><option value="">Todos</option><option value="critico">Críticos</option><option value="vencendo">Vencendo</option><option value="regular">Regulares</option></select><div class="list-search"><i class="bi bi-search"></i><input [(ngModel)]="search" placeholder="Buscar"></div></div></div>
+      <div class="inventory-list">@for (epi of filteredEpis; track epi.id) {<div class="inventory-item"><div class="inventory-symbol"><i class="bi bi-shield-check"></i></div><div class="inventory-main"><div><strong>{{ epi.name }}</strong><span>{{ epi.code }} · {{ epi.category }} · CA {{ epi.ca }}</span></div><div class="stock-meter"><span [style.width.%]="stockPercent(epi.stock, epi.minStock)" [class.low]="epi.stock <= epi.minStock"></span></div></div><div class="inventory-numbers"><strong [class.text-danger]="epi.stock <= epi.minStock">{{ epi.stock }}</strong><span>mín. {{ epi.minStock }}</span></div><div class="expiry-data"><span>Validade</span><strong [class.text-danger]="data.daysUntil(epi.expiry) <= data.settings().alertDays">{{ epi.expiry }}</strong><small>{{ data.daysUntil(epi.expiry) }} dia(s)</small></div></div>}@empty {<div class="empty-state">Nenhum item encontrado.</div>}</div>
+    </article>
+  </div>
+</section>

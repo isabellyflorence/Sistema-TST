@@ -1,0 +1,114 @@
+<section class="module-page page-animation">
+  <header class="module-header">
+    <div>
+      <span class="page-kicker">GESTÃO DE DADOS</span>
+      <h1>Cadastros</h1>
+      <p>Gerencie colaboradores, EPIs, funções e usuários do sistema.</p>
+    </div>
+  </header>
+
+  <nav class="module-tabs" aria-label="Tipos de cadastro">
+    <button type="button" [class.active]="activeTab === 'colaboradores'" (click)="setTab('colaboradores')"><i class="bi bi-people"></i> Colaboradores</button>
+    <button type="button" [class.active]="activeTab === 'epis'" (click)="setTab('epis')"><i class="bi bi-shield-check"></i> EPIs</button>
+    <button type="button" [class.active]="activeTab === 'funcoes'" (click)="setTab('funcoes')"><i class="bi bi-diagram-3"></i> Funções</button>
+    <button type="button" [class.active]="activeTab === 'usuarios'" (click)="setTab('usuarios')"><i class="bi bi-person-gear"></i> Usuários</button>
+  </nav>
+
+  @if (message) {
+    <div class="feedback" [class.error]="messageType === 'error'" [attr.role]="messageType === 'error' ? 'alert' : 'status'"><i class="bi" [class.bi-check-circle]="messageType === 'success'" [class.bi-exclamation-circle]="messageType === 'error'"></i>{{ message }}</div>
+  }
+
+  @if (activeTab === 'colaboradores') {
+    <div class="module-grid">
+      <form class="panel record-form" (ngSubmit)="saveEmployee()">
+        <div class="panel-title"><div><h2>{{ employeeForm.name ? 'Editar colaborador' : 'Novo colaborador' }}</h2><p>Campos marcados são obrigatórios.</p></div><i class="bi bi-person-plus"></i></div>
+        <div class="form-grid">
+          <label class="span-2">Nome completo*<input name="employeeName" autocomplete="name" [(ngModel)]="employeeForm.name" placeholder="Ex.: Ana Beatriz Souza"></label>
+          <label>Matrícula*<input name="employeeRegistration" [(ngModel)]="employeeForm.registration" placeholder="HE-0000"></label>
+          <label>CPF*<input name="employeeCpf" inputmode="numeric" autocomplete="off" maxlength="14" [ngModel]="employeeForm.cpf" (ngModelChange)="employeeForm.cpf = formatCpf($event)" placeholder="000.000.000-00"></label>
+          <label class="span-2">E-mail*<input type="email" name="employeeEmail" autocomplete="email" [(ngModel)]="employeeForm.email" placeholder="nome@hospital.com"></label>
+          <label>Celular com DDD*<input name="employeePhone" inputmode="tel" autocomplete="tel" maxlength="15" [ngModel]="employeeForm.phone" (ngModelChange)="employeeForm.phone = formatPhone($event)" placeholder="(00) 00000-0000"></label>
+          <label>Setor<input name="employeeSector" [(ngModel)]="employeeForm.sector" placeholder="Ex.: UTI"></label>
+          <label class="span-2">Função*<select name="employeeRole" [(ngModel)]="employeeForm.roleId"><option value="">Selecione</option>@for (role of data.roles(); track role.id) {<option [value]="role.id">{{ role.name }}</option>}</select></label>
+          <label class="check-field span-2"><input type="checkbox" name="employeeActive" [(ngModel)]="employeeForm.active"><span>Colaborador ativo</span></label>
+        </div>
+        <div class="form-actions"><button class="btn-outline" type="button" (click)="cancelEdit()">Limpar</button><button class="btn-primary" type="submit"><i class="bi bi-check-lg"></i> Salvar</button></div>
+      </form>
+
+      <article class="panel records-panel">
+        <div class="list-toolbar"><div><h2>Colaboradores</h2><p>{{ filteredEmployees.length }} registro(s)</p></div><div class="list-search"><i class="bi bi-search"></i><input [(ngModel)]="search" aria-label="Buscar colaboradores" placeholder="Buscar por nome, CPF ou contato"></div></div>
+        <div class="table-responsive"><table class="data-table"><caption class="visually-hidden">Colaboradores cadastrados e seus contatos</caption><thead><tr><th>Colaborador / contato</th><th>Matrícula</th><th>Função / setor</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+          @for (employee of filteredEmployees; track employee.id) {<tr><td><strong>{{ employee.name }}</strong><small>{{ employee.cpf || 'CPF não informado' }}</small><small class="contact-line"><i class="bi bi-envelope"></i>{{ employee.email || 'E-mail não informado' }}</small><small class="contact-line"><i class="bi bi-phone"></i>{{ employee.phone || 'Celular não informado' }}</small></td><td>{{ employee.registration }}</td><td>{{ data.roleName(employee.roleId) }}<small>{{ employee.sector || 'Sem setor' }}</small></td><td><span class="status-pill" [class.neutral]="!employee.active">{{ employee.active ? 'Ativo' : 'Inativo' }}</span></td><td><div class="row-actions"><button type="button" [attr.aria-label]="'Editar ' + employee.name" (click)="editEmployee(employee)"><i class="bi bi-pencil"></i></button><button type="button" class="danger" [attr.aria-label]="'Excluir ' + employee.name" (click)="deleteEmployee(employee)"><i class="bi bi-trash"></i></button></div></td></tr>}
+          @empty {<tr><td colspan="5" class="empty-state">Nenhum colaborador encontrado.</td></tr>}
+        </tbody></table></div>
+      </article>
+    </div>
+  }
+
+  @if (activeTab === 'epis') {
+    <div class="module-grid">
+      <form class="panel record-form" (ngSubmit)="saveEpi()">
+        <div class="panel-title"><div><h2>{{ epiForm.name ? 'Editar EPI' : 'Novo EPI' }}</h2><p>Cadastre o certificado, validade e estoque.</p></div><i class="bi bi-shield-plus"></i></div>
+        <div class="form-grid">
+          <label>Código único*<input name="epiCode" [(ngModel)]="epiForm.code" placeholder="EPI-000"></label>
+          <label>Nome*<input name="epiName" [(ngModel)]="epiForm.name" placeholder="Nome do equipamento"></label>
+          <label class="span-2">Descrição*<textarea name="epiDescription" [(ngModel)]="epiForm.description" rows="2"></textarea></label>
+          <label>Categoria*<select name="epiCategory" [(ngModel)]="epiForm.category"><option value="">Selecione</option>@for (category of categories; track category) {<option [value]="category">{{ category }}</option>}</select></label>
+          <label>Tamanho*<input name="epiSize" [(ngModel)]="epiForm.size" placeholder="P, M, G ou Único"></label>
+          <label>CA*<input name="epiCa" [(ngModel)]="epiForm.ca" placeholder="Certificado de Aprovação"></label>
+          <label>Validade*<input type="date" name="epiExpiry" [(ngModel)]="epiForm.expiry"></label>
+          <label>Estoque atual<input type="number" min="0" name="epiStock" [(ngModel)]="epiForm.stock"></label>
+          <label>Estoque mínimo<input type="number" min="0" name="epiMinStock" [(ngModel)]="epiForm.minStock"></label>
+        </div>
+        <div class="form-actions"><button class="btn-outline" type="button" (click)="cancelEdit()">Limpar</button><button class="btn-primary" type="submit"><i class="bi bi-check-lg"></i> Salvar</button></div>
+      </form>
+
+      <article class="panel records-panel">
+        <div class="list-toolbar"><div><h2>Equipamentos</h2><p>{{ filteredEpis.length }} registro(s)</p></div><div class="list-search"><i class="bi bi-search"></i><input [(ngModel)]="search" placeholder="Buscar"></div></div>
+        <div class="table-responsive"><table class="data-table"><caption class="visually-hidden">Equipamentos de proteção individual cadastrados</caption><thead><tr><th>EPI</th><th>CA / categoria</th><th>Validade</th><th>Estoque</th><th>Ações</th></tr></thead><tbody>
+          @for (epi of filteredEpis; track epi.id) {<tr><td><strong>{{ epi.name }}</strong><small>{{ epi.code }} · {{ epi.size }}</small></td><td>{{ epi.ca }}<small>{{ epi.category }}</small></td><td><span [class.text-danger]="data.isExpired(epi.expiry)">{{ epi.expiry }}</span></td><td><span class="stock-value" [class.low]="epi.stock <= epi.minStock">{{ epi.stock }}</span><small>Mín. {{ epi.minStock }}</small></td><td><div class="row-actions"><button type="button" [attr.aria-label]="'Editar ' + epi.name" (click)="editEpi(epi)"><i class="bi bi-pencil"></i></button><button type="button" class="danger" [attr.aria-label]="'Excluir ' + epi.name" (click)="deleteEpi(epi)"><i class="bi bi-trash"></i></button></div></td></tr>}
+          @empty {<tr><td colspan="5" class="empty-state">Nenhum EPI encontrado.</td></tr>}
+        </tbody></table></div>
+      </article>
+    </div>
+  }
+
+  @if (activeTab === 'funcoes') {
+    <div class="module-grid">
+      <form class="panel record-form" (ngSubmit)="saveRole()">
+        <div class="panel-title"><div><h2>{{ roleForm.name ? 'Editar função' : 'Nova função' }}</h2><p>Defina quais proteções são obrigatórias.</p></div><i class="bi bi-diagram-3"></i></div>
+        <div class="form-grid"><label class="span-2">Nome da função*<input name="roleName" [(ngModel)]="roleForm.name" placeholder="Ex.: Técnico em Enfermagem"></label></div>
+        <span class="field-caption">Categorias de EPI obrigatórias*</span>
+        <div class="checkbox-grid">@for (category of categories; track category) {<label><input type="checkbox" [checked]="roleCategories.has(category)" (change)="toggleRoleCategory(category, $any($event.target).checked)"><span>{{ category }}</span></label>}</div>
+        <div class="form-actions"><button class="btn-outline" type="button" (click)="cancelEdit()">Limpar</button><button class="btn-primary" type="submit"><i class="bi bi-check-lg"></i> Salvar</button></div>
+      </form>
+      <article class="panel records-panel"><div class="list-toolbar"><div><h2>Funções</h2><p>{{ filteredRoles.length }} registro(s)</p></div><div class="list-search"><i class="bi bi-search"></i><input [(ngModel)]="search" placeholder="Buscar"></div></div><div class="card-list">
+        @for (role of filteredRoles; track role.id) {<div class="list-card"><div class="list-card-icon"><i class="bi bi-person-badge"></i></div><div><strong>{{ role.name }}</strong><p>{{ role.requiredCategories.join(', ') }}</p></div><div class="row-actions"><button type="button" [attr.aria-label]="'Editar ' + role.name" (click)="editRole(role)"><i class="bi bi-pencil"></i></button><button type="button" class="danger" [attr.aria-label]="'Excluir ' + role.name" (click)="deleteRole(role)"><i class="bi bi-trash"></i></button></div></div>}
+        @empty {<div class="empty-state">Nenhuma função encontrada.</div>}
+      </div></article>
+    </div>
+  }
+
+  @if (activeTab === 'usuarios') {
+    <div class="module-grid">
+      <form class="panel record-form" (ngSubmit)="saveUser()">
+        <div class="panel-title"><div><h2>{{ userForm.name ? 'Editar usuário' : 'Novo usuário' }}</h2><p>O perfil define as funcionalidades liberadas.</p></div><i class="bi bi-person-lock"></i></div>
+        <div class="form-grid">
+          <label class="span-2">Nome completo*<input name="userName" autocomplete="name" [(ngModel)]="userForm.name" placeholder="Ex.: Juliana Silva"></label>
+          <label>Matrícula*<input name="userRegistration" [(ngModel)]="userForm.registration"></label>
+          <label>CPF*<input name="userCpf" inputmode="numeric" autocomplete="off" maxlength="14" [ngModel]="userForm.cpf" (ngModelChange)="userForm.cpf = formatCpf($event)" placeholder="000.000.000-00"></label>
+          <label class="span-2">E-mail*<input type="email" name="userEmail" autocomplete="email" [(ngModel)]="userForm.email" placeholder="nome@hospital.com"></label>
+          <label>Celular com DDD*<input name="userPhone" inputmode="tel" autocomplete="tel" maxlength="15" [ngModel]="userForm.phone" (ngModelChange)="userForm.phone = formatPhone($event)" placeholder="(00) 00000-0000"></label>
+          <label>Senha*<input type="password" name="userPassword" autocomplete="new-password" [(ngModel)]="userForm.password"></label>
+          <label class="span-2">Perfil*<select name="userProfile" [(ngModel)]="userForm.profile">@for (profile of profiles; track profile) {<option [value]="profile">{{ profile }}</option>}</select></label>
+          <label class="check-field span-2"><input type="checkbox" name="userActive" [(ngModel)]="userForm.active"><span>Usuário ativo</span></label>
+        </div>
+        <div class="form-actions"><button class="btn-outline" type="button" (click)="cancelEdit()">Limpar</button><button class="btn-primary" type="submit"><i class="bi bi-check-lg"></i> Salvar</button></div>
+      </form>
+      <article class="panel records-panel"><div class="list-toolbar"><div><h2>Usuários</h2><p>{{ filteredUsers.length }} registro(s)</p></div><div class="list-search"><i class="bi bi-search"></i><input [(ngModel)]="search" aria-label="Buscar usuários" placeholder="Buscar por nome, CPF ou contato"></div></div><div class="table-responsive"><table class="data-table"><caption class="visually-hidden">Usuários, contatos e perfis de acesso</caption><thead><tr><th>Usuário / contato</th><th>Matrícula</th><th>Perfil</th><th>Status</th><th>Ações</th></tr></thead><tbody>
+        @for (user of filteredUsers; track user.id) {<tr><td><strong>{{ user.name }}</strong><small>{{ user.cpf || 'CPF não informado' }}</small><small class="contact-line"><i class="bi bi-envelope"></i>{{ user.email || 'E-mail não informado' }}</small><small class="contact-line"><i class="bi bi-phone"></i>{{ user.phone || 'Celular não informado' }}</small></td><td>{{ user.registration }}</td><td>{{ user.profile }}</td><td><span class="status-pill" [class.neutral]="!user.active">{{ user.active ? 'Ativo' : 'Inativo' }}</span></td><td><div class="row-actions"><button type="button" [attr.aria-label]="'Editar ' + user.name" (click)="editUser(user)"><i class="bi bi-pencil"></i></button><button type="button" class="danger" [attr.aria-label]="'Excluir ' + user.name" (click)="deleteUser(user)"><i class="bi bi-trash"></i></button></div></td></tr>}
+        @empty {<tr><td colspan="5" class="empty-state">Nenhum usuário encontrado.</td></tr>}
+      </tbody></table></div></article>
+    </div>
+  }
+</section>

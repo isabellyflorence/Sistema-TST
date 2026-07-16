@@ -1,0 +1,190 @@
+<section class="dashboard page-animation">
+  <header class="dashboard-header">
+    <div>
+      <span class="page-kicker">VISÃO GERAL</span>
+      <h1>Dashboard</h1>
+      <p>
+        Acompanhe os indicadores e movimentações do sistema.
+      </p>
+    </div>
+
+    <div class="dashboard-actions">
+      <button class="secondary-button" type="button" (click)="exportDashboard()">
+        <i class="bi bi-download"></i>
+        Exportar
+      </button>
+
+      @if (auth.canAccess('gestao-epis')) {
+        <button class="primary-button" type="button" routerLink="/gestao-epis">
+          <i class="bi bi-plus-lg"></i>
+          Nova entrega
+        </button>
+      }
+    </div>
+  </header>
+
+  <div class="indicators-grid">
+    @for (indicator of indicators; track indicator.title) {
+      <article class="indicator-card">
+        <div class="indicator-icon {{ indicator.color }}">
+          <i class="bi {{ indicator.icon }}"></i>
+        </div>
+
+        <div class="indicator-content">
+          <span>{{ indicator.title }}</span>
+          <strong>{{ indicator.value }}</strong>
+          <small>{{ indicator.detail }}</small>
+        </div>
+
+        <i class="bi bi-three-dots card-menu"></i>
+      </article>
+    }
+  </div>
+
+  <div class="dashboard-grid">
+    <article class="panel chart-panel">
+      <div class="panel-header">
+        <div>
+          <h2>EPIs entregues por mês</h2>
+          <p>Movimentações registradas nos últimos seis meses.</p>
+        </div>
+
+        <span class="chart-period">Últimos 7 meses</span>
+      </div>
+
+      <div class="chart-area">
+        <div class="chart-y-axis">
+          @for (label of chartYLabels; track $index) {<span>{{ label }}</span>}
+        </div>
+
+        <div class="chart-content">
+          <div class="chart-grid-lines">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <svg viewBox="0 0 700 220" preserveAspectRatio="none" role="img" aria-label="Gráfico de entregas de EPIs nos últimos sete meses">
+            <title>Entregas mensais de EPIs</title>
+            <defs>
+              <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#0686d4" stop-opacity="0.22"/>
+                <stop offset="100%" stop-color="#0686d4" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+
+            <path
+              class="area"
+              [attr.d]="chartArea">
+            </path>
+
+            <polyline
+              class="line"
+              [attr.points]="chartPolyline">
+            </polyline>
+
+            @for (point of chartPoints; track point.label) {<circle [attr.cx]="point.x" [attr.cy]="point.y" r="5"><title>{{ point.label }}: {{ point.value }} entrega(s)</title></circle>}
+          </svg>
+
+          <div class="chart-x-axis">
+            @for (point of chartPoints; track point.label) {<span>{{ point.label }}</span>}
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="panel expiration-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Validades por vencer</h2>
+          <p>Itens que exigem atenção.</p>
+        </div>
+
+        @if (auth.canAccess('estoque')) {<button type="button" routerLink="/estoque">Ver todos</button>}
+      </div>
+
+      <div class="expiration-list">
+        @for (item of expiringItems; track item.name) {
+          <div class="expiration-item">
+            <div class="expiration-icon">
+              <i class="bi bi-calendar2-exclamation"></i>
+            </div>
+
+            <div>
+              <strong>{{ item.name }}</strong>
+              <span>Vencimento próximo</span>
+            </div>
+
+            <span class="deadline {{ item.color }}">
+              {{ item.days }}
+            </span>
+          </div>
+        }
+      </div>
+    </article>
+
+    <article class="panel movements-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Movimentações recentes</h2>
+          <p>Entregas, trocas e devoluções registradas.</p>
+        </div>
+
+        @if (auth.canAccess('gestao-epis')) {
+          <button type="button" routerLink="/gestao-epis">
+            Ver todas
+            <i class="bi bi-arrow-right"></i>
+          </button>
+        }
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Colaborador</th>
+              <th>EPI</th>
+              <th>Data e horário</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (movement of movements; track movement.collaborator) {
+              <tr>
+                <td>
+                  <div class="employee">
+                    <div class="employee-avatar">
+                      {{ movement.initials }}
+                    </div>
+
+                    <div>
+                      <strong>{{ movement.collaborator }}</strong>
+                      <span>{{ movement.role }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <td>{{ movement.epi }}</td>
+                <td>{{ movement.date }}</td>
+
+                <td>
+                  <span
+                    class="status"
+                    [class.delivered]="movement.status === 'Entregue'"
+                    [class.returned]="movement.status === 'Devolvido'"
+                    [class.exchange]="movement.status === 'Troca'">
+
+                    {{ movement.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </article>
+  </div>
+</section>

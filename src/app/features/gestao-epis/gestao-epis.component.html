@@ -1,0 +1,37 @@
+<section class="module-page page-animation">
+  <header class="module-header"><div><span class="page-kicker">RASTREABILIDADE</span><h1>Gestão de EPIs</h1><p>Registre entregas, devoluções e trocas com validação automática.</p></div></header>
+
+  @if (message) {<div class="feedback" [class.error]="messageType === 'error'" [attr.role]="messageType === 'error' ? 'alert' : 'status'"><i class="bi" [class.bi-check-circle]="messageType === 'success'" [class.bi-exclamation-circle]="messageType === 'error'"></i>{{ message }}</div>}
+
+  <div class="module-grid operations-grid">
+    <form class="panel record-form" (ngSubmit)="register()">
+      <div class="panel-title"><div><h2>Nova movimentação</h2><p>O estoque é atualizado automaticamente.</p></div><i class="bi bi-arrow-left-right"></i></div>
+      <div class="operation-selector">
+        @for (type of operationTypes; track type) {<button type="button" [class.active]="movement.type === type" (click)="movement.type = type; onEmployeeChange()"><i class="bi" [class.bi-box-arrow-right]="type === 'Entrega'" [class.bi-box-arrow-in-left]="type === 'Devolução'" [class.bi-arrow-repeat]="type === 'Troca'"></i>{{ type }}</button>}
+      </div>
+      <div class="form-grid">
+        <label class="span-2">Colaborador*<select name="movementEmployee" [(ngModel)]="movement.employeeId" (ngModelChange)="onEmployeeChange()"><option value="">Selecione</option>@for (employee of data.employees(); track employee.id) {<option [value]="employee.id">{{ employee.name }} · {{ employee.registration }}</option>}</select></label>
+        @if (selectedEmployee) {<div class="info-callout span-2"><i class="bi bi-shield-check"></i><div><strong>{{ data.roleName(selectedEmployee.roleId) }}</strong><span>Proteções permitidas: {{ requiredCategories.join(', ') }}</span></div></div>}
+        <label class="span-2">EPI*<select name="movementEpi" [(ngModel)]="movement.epiId"><option value="">Selecione</option>@for (epi of availableEpis; track epi.id) {<option [value]="epi.id" [disabled]="movement.type === 'Entrega' && (epi.stock < 1 || data.isExpired(epi.expiry))">{{ epi.name }} · {{ epi.size }} · estoque {{ epi.stock }}{{ data.isExpired(epi.expiry) ? ' · VENCIDO' : '' }}</option>}</select></label>
+        <label>Quantidade*<input type="number" min="1" name="movementQuantity" [(ngModel)]="movement.quantity"></label>
+        <label>Data e hora*<input type="datetime-local" name="movementDate" [(ngModel)]="movement.date"></label>
+        <label class="span-2">Motivo / observação<textarea rows="2" name="movementReason" [(ngModel)]="movement.reason" placeholder="Ex.: entrega periódica, desgaste, avaria"></textarea></label>
+        <label class="span-2">Assinatura / confirmação de recebimento{{ movement.type === 'Entrega' ? '*' : '' }}<input name="movementSignature" [(ngModel)]="movement.signature" placeholder="Nome completo do responsável"></label>
+      </div>
+      <div class="form-actions"><button class="btn-outline" type="button" (click)="resetMovement()">Limpar</button><button class="btn-primary" type="submit"><i class="bi bi-check2-circle"></i> Registrar {{ movement.type.toLowerCase() }}</button></div>
+    </form>
+
+    <article class="panel rules-panel">
+      <div class="panel-title"><div><h2>Validações de segurança</h2><p>Regras aplicadas antes da entrega.</p></div><i class="bi bi-shield-lock"></i></div>
+      <ul class="rules-list"><li><i class="bi bi-check-circle-fill"></i><div><strong>Compatibilidade por função</strong><span>Somente EPIs exigidos para a função selecionada.</span></div></li><li><i class="bi bi-check-circle-fill"></i><div><strong>Bloqueio de validade</strong><span>Equipamentos vencidos não podem ser entregues.</span></div></li><li><i class="bi bi-check-circle-fill"></i><div><strong>Controle de saldo</strong><span>A operação é impedida quando não há estoque.</span></div></li><li><i class="bi bi-check-circle-fill"></i><div><strong>Rastreabilidade</strong><span>Data, hora, colaborador e assinatura ficam registrados.</span></div></li></ul>
+    </article>
+  </div>
+
+  <article class="panel records-panel full-panel">
+    <div class="list-toolbar"><div><h2>Histórico de movimentações</h2><p>{{ history.length }} registro(s) · trilha imutável</p></div><div class="toolbar-fields"><label class="visually-hidden" for="historyType">Filtrar por tipo</label><select id="historyType" [(ngModel)]="historyType"><option value="">Todos os tipos</option>@for (type of operationTypes; track type) {<option [value]="type">{{ type }}</option>}</select><div class="list-search"><i class="bi bi-search"></i><label class="visually-hidden" for="historySearch">Buscar no histórico</label><input id="historySearch" [(ngModel)]="historySearch" placeholder="Buscar"></div></div></div>
+    <div class="table-responsive"><table class="data-table"><caption class="visually-hidden">Histórico imutável de entregas, devoluções e trocas de EPIs</caption><thead><tr><th>Tipo</th><th>Colaborador</th><th>EPI</th><th>Qtd.</th><th>Data</th><th>Confirmação</th></tr></thead><tbody>
+      @for (item of history; track item.id) {<tr><td><span class="movement-type" [class.return]="item.type === 'Devolução'" [class.exchange]="item.type === 'Troca'">{{ item.type }}</span></td><td><strong>{{ data.employeeName(item.employeeId) }}</strong><small>{{ item.reason || 'Sem observação' }}</small></td><td>{{ data.epiName(item.epiId) }}</td><td>{{ item.quantity }}</td><td>{{ formatDate(item.date) }}</td><td>{{ item.signature || '—' }}</td></tr>}
+      @empty {<tr><td colspan="6" class="empty-state">Nenhuma movimentação encontrada.</td></tr>}
+    </tbody></table></div>
+  </article>
+</section>

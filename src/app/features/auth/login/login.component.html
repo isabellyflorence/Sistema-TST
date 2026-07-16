@@ -1,0 +1,137 @@
+<div class="login-page">
+  <section class="login-brand-area">
+    <div class="brand-content page-animation">
+      <div class="brand-logo">
+        <i class="bi bi-shield-plus"></i>
+      </div>
+
+      <span class="brand-kicker">HOSPITAL ESPERANÇA</span>
+
+      <h1>
+        Segurança hoje,
+        <strong>cuidado sempre.</strong>
+      </h1>
+
+      <p>
+        Sistema interno para cadastro, controle de EPIs,
+        treinamentos, estoque e conformidade.
+      </p>
+
+      <div class="brand-features">
+        <div>
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Controle completo de EPIs</span>
+        </div>
+
+        <div>
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Alertas de validade e estoque</span>
+        </div>
+
+        <div>
+          <i class="bi bi-check-circle-fill"></i>
+          <span>Relatórios e rastreabilidade</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="decorative-circle circle-one"></div>
+    <div class="decorative-circle circle-two"></div>
+  </section>
+
+  <section class="login-form-area">
+    <form class="login-card page-animation" (ngSubmit)="entrar()">
+      <div class="mobile-logo">
+        <i class="bi bi-shield-plus"></i>
+        <div>
+          <strong>Hospital Esperança</strong>
+          <span>SICC</span>
+        </div>
+      </div>
+
+      <span class="form-kicker">BEM-VINDO</span>
+      <h2>Acesse o sistema</h2>
+      <p class="form-subtitle">
+        Entre com seus dados para continuar.
+      </p>
+
+      <label for="email">Matrícula ou e-mail</label>
+      <div class="field">
+        <i class="bi bi-person"></i>
+        <input
+          id="email"
+          name="email"
+          type="text"
+          autocomplete="username"
+          [(ngModel)]="email"
+          placeholder="Digite sua matrícula ou e-mail">
+      </div>
+
+      <div class="password-title">
+        <label for="senha">Senha</label>
+        <button type="button" class="forgot-password" (click)="recuperarSenha()">Esqueci minha senha</button>
+      </div>
+
+      <div class="field">
+        <i class="bi bi-lock"></i>
+        <input
+          id="senha"
+          name="senha"
+          autocomplete="current-password"
+          [type]="mostrarSenha ? 'text' : 'password'"
+          [(ngModel)]="senha"
+          placeholder="Digite sua senha">
+
+        <button
+          type="button"
+          class="show-password"
+          (click)="mostrarSenha = !mostrarSenha"
+          aria-label="Mostrar ou esconder senha">
+
+          <i
+            class="bi"
+            [class.bi-eye]="!mostrarSenha"
+            [class.bi-eye-slash]="mostrarSenha">
+          </i>
+        </button>
+      </div>
+
+      @if (erro) {
+        <div class="login-feedback error" role="alert"><i class="bi bi-exclamation-circle"></i>{{ erro }}</div>
+      }
+
+      @if (recuperacaoEnviada) {
+        <div class="login-feedback" role="status"><i class="bi bi-check-circle"></i>Solicitação registrada. Procure o administrador do sistema.</div>
+      }
+
+      <label class="remember-access">
+        <input type="checkbox">
+        <span>Lembrar meu acesso</span>
+      </label>
+
+      <button
+        class="login-button"
+        type="submit"
+        [disabled]="carregando">
+
+        @if (carregando) {
+          <span class="spinner-border spinner-border-sm"></span>
+          Entrando...
+        } @else {
+          Entrar
+          <i class="bi bi-arrow-right"></i>
+        }
+      </button>
+
+      <div class="security-message">
+        <i class="bi bi-shield-lock"></i>
+        <span>Acesso seguro e controlado por perfil.</span>
+      </div>
+
+      <div class="demo-access">
+        <strong>Acesso de demonstração</strong>
+        <span>admin&#64;hospital.com · senha: admin123</span>
+      </div>
+    </form>
+  </section>
+</div>
