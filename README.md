@@ -1,6 +1,6 @@
-# Hospital Esperança — SICC
+SISTEMA TST
 
-Aplicação Angular para gestão de Segurança do Trabalho no ambiente hospitalar.
+Aplicação Angular para gestão de Segurança do Trabalho.
 
 ## Funcionalidades
 
